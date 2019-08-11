@@ -1,0 +1,30 @@
+{
+    "manifest_version": 2,
+    "name": "TixcraftSnapUp",
+    "version": "1.0.0",
+  
+    "description": "helps you to get the ticket hehe",
+  
+    "icons": {
+      "48": "icon1.png"
+    },
+  
+    "permissions": [
+        "debugger"
+    ],
+    "background":{
+        "scripts" : ["bg.js"]
+    },
+    "browser_action": {
+        "default_icon": "icon1.png",
+        "default_popup": "popup.html"
+    },
+
+    "content_scripts": [
+      {
+        "matches": ["*://*.tixcraft.com/*"],
+        "js": ["buyTicket.js"]
+      }
+    ]
+  
+  }
