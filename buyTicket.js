@@ -1,132 +1,146 @@
 
-// 跑很久就爆了 進去的時間點不對
-// 在看一下時間刷
+// 搶票前須知：
+// 驗證通常會跳 alert 需要再按一次 enter
+// 沒驗證就可以切換英文 打驗證碼了
+// 跑很久就爆了 進去的時間點不對，在看一下時間刷
 // Enter 可以狂按
 
+// 信用卡帳戶驗證卡號前六碼(?)
+
+// Todo 
+// *isTrusted 
+// 訂票張數
+// 選位置
+// redirect game to detail
+// areaArr1 .sort (?)，選最貴的區域
 
 
-// game -> verify -> area
+
+// Page flow: game -> verify -> area
 const reSelectDOMTime = 10
-let answer ="20190928"
+let answer ="20191231"
 
-// 張數
-// https://www.indievox.com/wearesouthrocks/event-post/21821
-const selectTicket =()=>{
+let whichActivity = 3 || 3 // 第一場是 1，第二場是 3
+
+let whichArea = 2 // most expensive area ex.2,4,6,8...
+let WhichSubArea = 1 // 1 是第一個 subArea ex.1,2,3,4....
+
+// 會有上限問題，等 isTrusted 做好再改 4
+let howMuchTickets = 2
 
 
-// 火球祭直接跳過 step2 
-   
+const selectActivity =()=>{
+    // 火球祭直接跳過 step2 
 
-
-
-    // dd 代表 一列 以及 立即訂購按鈕 因此，要選第四列，就要選 8，7啦幹 
-    let dd = document.getElementsByClassName('gridc')
-    let num = 1 || 3
-    let ddLengthSubtract1 = dd.length -1
-    // if ( !dd[num] || dd[num].childNodes[0].innerHTML!== '' ){
+    // activityArea 代表 一列 以及 立即訂購按鈕 因此，要選第四列，就要選 8，7啦幹 
+    let activityArea = document.getElementsByClassName('gridc')
+    let activityAreaLengthSubtract1 = activityArea.length -1
+    // if ( !activityArea[whichActivity] || activityArea[whichActivity].childNodes[0].innerHTML!== '' ){
     //     console.log("sold out");
     //     // location.reload()
     // }
-
-
-    
-    // 選最後一行
-    if (!dd[num] || dd[num].childNodes[0].innerHTML!== '') return setTimeout(function () { 
-        // console.log(buyButton1);
-        selectTicket() 
+ 
+    if (!activityArea[whichActivity] || activityArea[whichActivity].childNodes[0].innerHTML!== '') return setTimeout(function () { 
+        selectActivity() 
     }, reSelectDOMTime)
     
-    console.log("in add-ons");
-
-    dd[num].childNodes[0].click()
-
-
-    // 有兩個購買鍵 兩個購買鍵 分別是看各自的 幾人票決定
-    // let buttonGroup = document.querySelectorAll('.btn-group.btn-group-vertical.btn-block')
-    // buttonGroup[0].childNodes[buttonGroup[1].childNodes.length-2].click()
-    // console.log(buyButton1, "not less than 1");
-    // buyButton1[1].click()
+    // activityArea[whichActivity].childNodes[0].click()
 
     // redirect 後 要怎麼處理
     // content_scripts 被迫刷新
     purchase()
-
-
-    // document.getElementById("mySelect").selectedIndex = "2";
-    // 請再次確認訂單 alert ?
-
-
-    // let nextStepButton = document.querySelector('.btn.btn-3d')
-    // // if(nextStepButton) nextStepButton.click()
-    // document.onkeydown = function (e) {  //對整個頁面文件監聽 
-    //     if (e.keyCode == 13) {
-    //         nextStepButton.click()
-    //     }
-    // };
-
 }
 
-// https://www.indievox.com/m/purchase/buy-ticket-select-payment
-
-// step 1.5
+// step 1.5，答案通常不會一樣
 const verify = ()=> {
     // 要給答案嗎?
     // 輸入錯誤的話 enter 之後他會在原視窗，跳 alert，所以只要 focus 第一次就好
-    let er = document.getElementById('checkCode')
-    if ( !er || er.length < 1) return setTimeout(function () { 
-        console.log('SelectPayment is :', er);
+    let checkCodeDom = document.getElementById('checkCode')
+    if ( !checkCodeDom || checkCodeDom.length < 1) return setTimeout(function () { 
+        // console.log('SelectPayment is :', checkCodeDom);
         verify() 
     }, reSelectDOMTime)
-    er.focus()
-    // er.value = answer
+    checkCodeDom.focus()
+    // checkCodeDom.value = answer
 }
 
+
+// step 2
 const selectZone = ()=>{
-    let whichArea = 2 // the most expensive area
-    let WhichSubArea = 2 // C
-    // step 2 
     // 假如沒有 也要做
     let zone = document.getElementsByClassName('zone area-list')
-    // To Do
-    // error handling 
+    // 一個 tab 代表一個 .childNodes[i]
+        // 1 是 區域的 title 
+        // 2 是 區域的內容 (可點選)
+        // 所以選下一個區域要加2
+        //     0 是第一個 subArea，1是第二個，依此類推
+        //         再一個 0 選到 a tag 
+        //             0是 subArea 顏色
+        //             1是 區域價位
+        //             2是 剩餘數量
+        //             有剩的話，color === #FF0000，顯示為 剩餘 x
+    // example
+    // zone[0].childNodes[2].childNodes[1].childNodes[0].childNodes[2].color === "#FF0000"
+            //  第一區        第二個 subArea 
+
     if( !zone[0] ) return setTimeout(function () { 
-        console.log('SelectPayment is :', zone);
+        // console.log('SelectPayment is :', zone);
         purchase() 
     }, reSelectDOMTime)
-    if( !zone[0].childNodes[whichArea].childNodes[WhichSubArea] ){
-        zone[0].childNodes[whichArea].childNodes[0].childNodes[0].click()
-    } else{
+ 
+
+    // 假如理想的沒搶到，至少挑一個搶，用 forEach 跑
+    if( zone[0].childNodes[whichArea].childNodes[WhichSubArea].childNodes[0].childNodes[2] ){
         zone[0].childNodes[whichArea].childNodes[WhichSubArea].childNodes[0].click()
+    } else{
+        //    let totalAreaNumber = zone[0].childNodes.length/2 -1
+        let areaArr1 = Array.prototype.filter.call(zone[0].childNodes, (e, i) => {
+            return i !== 0 && i !== zone[0].childNodes.length -1 && i%2 === 0
+        })
+
+        areaArr1.map((area, ind)=>{
+            let totalSubAreaNumber = area.childNodes.length 
+            Array.prototype.map.call( area.childNodes, ( (subArea, i) => {
+                // 可以判斷 childNodes[2] 是不是 undefined，是的話就代表完售，因為完售沒有 grandChild 
+                if(subArea.childNodes[0].childNodes[2]){
+                    // filter 出來還有票的
+                    console.log(ind); //哪一區域的
+                    console.log( subArea.childNodes[0] )
+                    subArea.childNodes[0].click()
+                }
+                if(i === totalSubAreaNumber -1){
+                    console.log(`Area${ind} tickets are sold out `);
+                }
+            }))
+        })
     }
+
+
     // 再來是 選位置 這個要看場地 lol
+    
 }
 
+// step 3
 const purchase = () =>{
 
-
-
-
-
-    // step 3
     let tickets = document.getElementsByClassName('gridc')
 
-
-    // let sss = tickets[0].childNodes[3].childNodes[1]
-
-    // sss.selectedIndex = sss.length -1
-
-
-
     if (tickets.length < 1) return setTimeout(function () { 
-        console.log('SelectPayment is :', tickets);
+        // console.log('SelectPayment is :', tickets);
         purchase() 
     }, reSelectDOMTime)
-    let sss = tickets[0].childNodes[3].childNodes[1]
-        if (sss.length < 1) return setTimeout(function () { 
-            console.log('SelectPayment is :', tickets);
-            purchase() 
-        }, reSelectDOMTime)
-    sss.selectedIndex = sss.length -1
+
+    let ticketSelectArea = tickets[0].childNodes[3].childNodes[1]
+    if (ticketSelectArea && ticketSelectArea.length < 1) return setTimeout(function () { 
+        purchase() 
+    }, reSelectDOMTime)
+
+    if (0 < howMuchTickets < ticketSelectArea.length ){
+        ticketSelectArea.selectedIndex = howMuchTickets
+    }else{
+        ticketSelectArea.selectedIndex = ticketSelectArea.length -1 // ticketSelectArea.length -2 -3 
+    }
+
 
 
 // focus 沒用
@@ -135,17 +149,6 @@ const purchase = () =>{
     ver.focus()
     console.log("after focus");
 
-
-
-
-// 
-// let tickets = document.getElementsByClassName('gridc')
-
-
-// let sss = tickets[0].childNodes[3].childNodes[1]
-
-// sss.selectedIndex = sss.length -1
-// 
 
 
     // 只用 click 過不了啊
@@ -175,22 +178,14 @@ const purchase = () =>{
 
     // ss.checked = true
 
-
-
-
-// 不用 submit 了 它自動幫你做好 enter 了
-    // let agr = document.getElementById('ticketPriceSubmit')
-    // agr.click()
-    // 剩下 isTrusted 了
-
 }
 
-selectTicket()
+selectActivity()
 verify()
 selectZone()
 purchase()
 
 // window.onload = ()=>{
-//     selectTicket()
+//     selectActivity()
 //     purchase()
 // } 
