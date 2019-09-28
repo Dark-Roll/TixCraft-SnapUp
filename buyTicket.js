@@ -8,6 +8,7 @@
 // 信用卡帳戶驗證卡號前六碼(?)
 
 // Todo 
+// performance
 // *isTrusted 
 // 訂票張數
 // 選位置
@@ -136,8 +137,10 @@ const purchase = () =>{
     }, reSelectDOMTime)
 
     if (0 < howMuchTickets < ticketSelectArea.length ){
+        console.log("how much");
         ticketSelectArea.selectedIndex = howMuchTickets
     }else{
+        console.log("in length", ticketSelectArea.length -1);
         ticketSelectArea.selectedIndex = ticketSelectArea.length -1 // ticketSelectArea.length -2 -3 
     }
 
