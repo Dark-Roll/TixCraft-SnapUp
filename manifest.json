@@ -22,7 +22,7 @@
 
     "content_scripts": [
       {
-        "matches": ["*://*.tixcraft.com/*"],
+        "matches": ["*://*.tixcraft.com/*", "*://*.indievox.com/*"],
         "js": ["buyTicket.js"]
       }
     ]
